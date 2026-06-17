@@ -1,0 +1,9 @@
+FPS GAME STEPS
+
+- cube with texture
+- full camera movement, 
+- body walking movement,
+- load 3d models
+- enemy animation
+- map integration
+- full gameplay
