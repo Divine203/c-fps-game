@@ -11,6 +11,12 @@ const int H = 950;
 
 const Color bgColor = {0, 0, 0, 0};
 
+const float MAX_SPEED = 20.0f;
+const float MAX_ACCEL = 150.0f;
+const float FRICTION = 0.86f;
+const float AIR_DRAG = 0.98f;
+const float CONTROL = 15.0f;
+
 void controls(Camera3D *camera, float speed, float rotSpeed);
 
 int main()
