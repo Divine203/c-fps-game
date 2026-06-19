@@ -29,6 +29,9 @@ int main()
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    Model model = LoadModel("assets/dungeon+assets.glb");
+    BoundingBox bounds = GetMeshBoundingBox(model.meshes[0]);
+
     Vector3 cubePosition = {0.0f, 1.0f, 0.0f};
 
     int cameraMode = CAMERA_FIRST_PERSON;
@@ -47,8 +50,10 @@ int main()
 
         BeginMode3D(camera);
 
-        DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
-        DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, MAROON);
+        DrawModel(model, cubePosition, 1.0F, WHITE);
+
+        // DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
+        // DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, MAROON);
 
         DrawGrid(100, 1.0f); // int slices, float spacing
 
