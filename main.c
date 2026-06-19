@@ -6,6 +6,16 @@
 #include <math.h>
 #include <raymath.h>
 
+#define RLIGHTS_IMPLEMENTATION
+#include "rlights.h"
+
+#if defined(PLATFORM_DESKTOP)
+    #define GLSL_VERSION            330
+#else   // PLATFORM_ANDROID, PLATFORM_WEB
+    #define GLSL_VERSION            100
+#endif
+
+
 const int W = 1500;
 const int H = 950;
 
@@ -18,6 +28,7 @@ Vector3 applyViewBob(double dt);
 bool isMoving = false;
 
 Camera3D camera = {0};
+Shader shader = {0};
 
 int main()
 {
@@ -34,6 +45,19 @@ int main()
 
     Vector3 cubePosition = {0.0f, 1.0f, 0.0f};
 
+    // load basic lighting shader
+    shader = LoadShader(TextFormat("resources/shaders/glsl%i/lighting.vs", GLSL_VERSION),
+                        TextFormat("resources/shaders/glsl%i/lighting.fs", GLSL_VERSION));
+
+    // get some required shader locations
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    SetShaderValue(shader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
+
+    Light lights[MAX_LIGHTS] = { 0 };
+    lights[0] = CreateLight(LIGHT_POINT, (Vector3){ -2, 4, -2}, Vector3Zero(), YELLOW, shader);
+    
     int cameraMode = CAMERA_FIRST_PERSON;
 
     SetTargetFPS(60);
@@ -41,6 +65,12 @@ int main()
     while (!WindowShouldClose())
     {
         UpdateCamera(&camera, cameraMode);
+
+        // update the shader with the camera view vector (points towards { 0.0f, 0.0f, 0.0f })
+        float cameraPos[3] = { camera.position.x, camera.position.y, camera.position.z };
+        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+
+        lights[0].enabled = true;
 
         if (IsKeyPressed(KEY_Z))
             camera.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -50,12 +80,21 @@ int main()
 
         BeginMode3D(camera);
 
+        BeginShaderMode(shader);
+
         DrawModel(model, cubePosition, 1.0F, WHITE);
 
         // DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
         // DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, MAROON);
 
         DrawGrid(100, 1.0f); // int slices, float spacing
+
+        EndShaderMode();
+
+        // Draw Lights
+        for (int i = 0; i < MAX_LIGHTS; i++) {
+            DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
+        }
 
         EndMode3D();
 
